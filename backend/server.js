@@ -1,7 +1,6 @@
-
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import "dotenv/config";
 import connectDB from "./config/mongodb.js";
 import connectCloudinary from "./config/cloudinary.js";
 
@@ -15,6 +14,7 @@ import menuRouter from "./routes/menuRoute.js";
 import http from "http";
 import { Server } from "socket.io";
 
+console.log("JWT SECRET:", process.env.JWT_SECRET);
 
 
 const app = express();
@@ -66,7 +66,7 @@ app.use(
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"]
+    allowedHeaders: ["Content-Type", "Authorization", "token"]
   })
 );
 

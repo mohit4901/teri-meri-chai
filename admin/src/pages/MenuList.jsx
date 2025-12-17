@@ -7,7 +7,8 @@ const MenuList = () => {
 
   const fetchMenu = async () => {
     const res = await api.get("/api/menu/list");
-    setMenu(res.data.menu || []);
+    console.log("MENU API RESPONSE:", res.data);
+    setMenu(res.data.menu || res.data.data || []);
   };
 
   const deleteMenu = async (id) => {
@@ -38,7 +39,13 @@ const MenuList = () => {
           {menu.map((item) => (
             <tr key={item._id} className="border-b">
               <td className="p-3">
-                <img src={item.image} className="w-16 h-16 rounded" />
+                {item.image ? (
+                  <img src={item.image} className="w-16 h-16 rounded" />
+                ) : (
+                  <div className="w-16 h-16 bg-gray-200 flex items-center justify-center text-xs text-gray-500 rounded">
+                    No Image
+                  </div>
+                )}
               </td>
               <td className="p-3">{item.name}</td>
               <td className="p-3">₹{item.price}</td>
@@ -55,7 +62,9 @@ const MenuList = () => {
 
           {menu.length === 0 && (
             <tr>
-              <td className="p-3 text-center" colSpan="4">No Menu Items.</td>
+              <td className="p-3 text-center" colSpan="4">
+                No Menu Items.
+              </td>
             </tr>
           )}
         </tbody>

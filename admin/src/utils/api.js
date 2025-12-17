@@ -9,10 +9,14 @@ const api = axios.create({
   }
 });
 
-// Inject token in all requests
+// ✅ Inject token properly
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("adminToken");
-  if (token) config.headers.token = token;
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`; // 🔥 MAIN FIX
+  }
+
   return config;
 });
 

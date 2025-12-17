@@ -27,7 +27,7 @@ export const addMenuItem = async (req, res) => {
 export const listMenuItems = async (req, res) => {
   try {
     const items = await menuItemModel.find({});
-    res.json({ success: true, data: items });
+    res.json({ success: true, menu: items }); // 🔥 CHANGE HERE
   } catch (err) {
     res.json({ success: false, message: err.message });
   }
