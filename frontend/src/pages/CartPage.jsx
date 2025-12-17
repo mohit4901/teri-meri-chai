@@ -28,7 +28,7 @@ const CartPage = () => {
 
           <button
             className="bg-red-500 text-white px-4 py-2 rounded text-lg w-full"
-            onClick={() => navigate("/place-order")}
+            onClick={() => navigate("/order")}
           >
             Proceed to Order
           </button>

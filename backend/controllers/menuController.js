@@ -63,9 +63,10 @@ export const deleteMenuItem = async (req, res) => {
 };
 
 
+
 export const getAllMenu = async (req, res) => {
   try {
-    const menu = await MenuModel.find({});
+    const menu = await menuItemModel.find({}); // ✅ FIXED
     return res.status(200).json({
       success: true,
       menu,

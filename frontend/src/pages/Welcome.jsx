@@ -25,6 +25,7 @@ const Welcome = () => {
   <h1 className="p-5 font-bold text-xl font-serif">Best Chinese Food In Town</h1>
   <div className="flex ml-[90px]"> 
   <h3 className=" font-medium text-l font-serif">Order Now   </h3>
+  
   <FiShoppingCart size={15} className="mt-1.5 ml-1.5"/> 
   </div>
   </div>
