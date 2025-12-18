@@ -1,9 +1,9 @@
 import { io } from "socket.io-client";
 
-export const socket = io(import.meta.env.VITE_BACKEND_URL || "http://localhost:4000", {
-  transports: ["websocket", "polling"],
-  withCredentials: true,
+export const socket = io(import.meta.env.VITE_BACKEND_URL, {
+  transports: ["polling", "websocket"], // Render safe
+  withCredentials: false,
   reconnection: true,
-  reconnectionDelay: 500,
-  reconnectionAttempts: 20,
+  reconnectionAttempts: 10,
+  timeout: 20000
 });
