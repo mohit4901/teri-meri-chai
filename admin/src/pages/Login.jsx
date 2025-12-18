@@ -8,7 +8,10 @@ const Login = () => {
   const { login } = useAdminAuth();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({ email: "", password: "" });
+  const [form, setForm] = useState({
+    email: "",
+    password: ""
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,33 +23,41 @@ const Login = () => {
         login(res.data.token);
         navigate("/orders");
       } else {
-        notifyError(res.data.message);
+        notifyError(res.data.message || "Login failed");
       }
-    } catch {
-      notifyError("Server Error");
+    } catch (err) {
+      notifyError(err.response?.data?.message || "Server error");
     }
   };
 
   return (
     <div className="w-full h-screen flex justify-center items-center bg-gray-100">
-      <form onSubmit={handleSubmit} className="bg-white shadow-md rounded-lg p-8 w-96">
-
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white shadow-md rounded-lg p-8 w-96"
+      >
         <h2 className="text-2xl font-bold mb-6 text-center">Admin Login</h2>
 
         <input
           type="email"
           placeholder="Email"
           required
+          value={form.email}
           className="w-full mb-4 px-4 py-3 border rounded-lg"
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
+          onChange={(e) =>
+            setForm({ ...form, email: e.target.value })
+          }
         />
 
         <input
           type="password"
           placeholder="Password"
           required
+          value={form.password}
           className="w-full mb-6 px-4 py-3 border rounded-lg"
-          onChange={(e) => setForm({ ...form, password: e.target.value })}
+          onChange={(e) =>
+            setForm({ ...form, password: e.target.value })
+          }
         />
 
         <button className="w-full py-3 bg-blue-600 text-white rounded-lg">
