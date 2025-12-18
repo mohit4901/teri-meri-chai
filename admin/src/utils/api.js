@@ -1,22 +1,20 @@
 import axios from "axios";
 
-const backend = import.meta.env.VITE_BACKEND_URL;
-
 const api = axios.create({
-  baseURL: backend,
+  baseURL: import.meta.env.VITE_BACKEND_URL,
   headers: {
     "Content-Type": "application/json"
   }
 });
 
-// ✅ Inject token properly
+// 🔐 Attach token EXCEPT on admin-login
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("adminToken");
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`; // 🔥 MAIN FIX
+  if (!config.url.includes("/admin-login")) {
+    const token = localStorage.getItem("adminToken");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
   }
-
   return config;
 });
 
