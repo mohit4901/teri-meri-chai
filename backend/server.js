@@ -57,23 +57,15 @@ console.log("DEBUG ALLOWED_ORIGINS =", ALLOWED_ORIGINS);
 
 // CORS MIDDLEWARE (EXPRESS 5 SAFE)
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin || ALLOWED_ORIGINS.includes(origin)) {
-        return callback(null, true);
-      }
+app.use(cors({
+  origin: ALLOWED_ORIGINS,
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "token"]
+}));
 
-      console.log("❌ BLOCKED ORIGIN:", origin);
-      return callback(new Error("CORS Blocked"));
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "token"]
-  })
-);
-
-
+// 🔥 VERY IMPORTANT (Preflight fix)
+app.options("*", cors());
 
 
 // SOCKET.IO SERVER
