@@ -3,7 +3,7 @@ import express from "express";
 import cors from "cors";
 import connectDB from "./config/mongodb.js";
 import connectCloudinary from "./config/cloudinary.js";
-
+import reviewRouter from "./routes/reviewRoute.js";
 import userRouter from "./routes/userRoute.js";
 import productRouter from "./routes/productRoute.js";
 import cartRouter from "./routes/cartRoute.js";
@@ -35,6 +35,9 @@ connectCloudinary();
 
 app.use(express.json({ limit: "25mb" }));
 app.use(express.urlencoded({ extended: true }));
+
+app.use("/api/reviews", reviewRouter);
+
 
 
 // GLOBAL ALLOWED ORIGINS

@@ -13,7 +13,7 @@ const Navbar = () => {
   return (
     <nav className="bg-white shadow px-4 py-3 flex justify-between items-center mb-4 sticky top-0 z-50">
       <Link to="/" className="text-xl font-bold text-red-600">
-        Teri Meri Chai
+        Ye Teri Meri Chai
       </Link>
 
       <div className="flex items-center gap-6">
