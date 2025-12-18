@@ -1,4 +1,3 @@
-// admin/src/App.jsx
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 
@@ -30,13 +29,10 @@ const App = () => {
 
       <div className="flex-1 flex flex-col">
         <ToastContainer />
-
         {token && <Navbar />}
 
         <div className="p-4 flex-1">
-
           <Routes>
-
             <Route path="/login" element={<Login />} />
 
             <Route
@@ -66,7 +62,7 @@ const App = () => {
               }
             />
 
-<Route path="/test-socket" element={<TestSocket />} />
+            <Route path="/test-socket" element={<TestSocket />} />
 
             <Route
               path="/list"
@@ -103,7 +99,6 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
-
           </Routes>
         </div>
       </div>
