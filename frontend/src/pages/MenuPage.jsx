@@ -1,14 +1,13 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useCart } from "../context/CartContext";
-import { api } from "../services/api";
 import MenuItemCard from "../components/MenuItemCard";
 
 const categories = ["All", "Chai", "Coffee", "Snacks(All)", "Drinks", "Special"];
 
 const categoryHierarchy = {
-  "Chai": ["Chai"],
-  "Coffee": ["Hot Coffee", "Cold Coffee"],
-  "Drinks": ["Mocktail", "Milk Shake", "Cold Drinks"],
+  Chai: ["Chai"],
+  Coffee: ["Hot Coffee", "Cold Coffee"],
+  Drinks: ["Mocktail", "Milk Shake", "Cold Drinks"],
   "Snacks(All)": [
     "Pizza",
     "Garlic Bread",
@@ -32,45 +31,37 @@ const categoryHierarchy = {
     "Burgizza",
     "Calzone"
   ],
-  "Special": ["Special", "Special Pizza", "Combo Offers"]
+  Special: ["Special", "Special Pizza", "Combo Offers"]
 };
 
 const MenuPage = () => {
-  const { menu, setMenu, tableNumber } = useCart();
+  const { menu, loadingMenu, tableNumber } = useCart();
   const [activeCategory, setActiveCategory] = useState("All");
   const [activeSubCategory, setActiveSubCategory] = useState(null);
 
-  useEffect(() => {
-    const fetchMenu = async () => {
-      try {
-        const res = await api.get("/api/menu/all");
-        if (res.data.success) {
-          setMenu(res.data.menu);
-        }
-      } catch (err) {
-        console.error("Menu Fetch Error:", err);
-      }
-    };
-    fetchMenu();
-  }, []);
+  if (loadingMenu) {
+    return <p className="p-4 text-gray-500">Loading menu...</p>;
+  }
 
   const subCategories =
     activeCategory !== "All"
       ? categoryHierarchy[activeCategory] || []
       : [];
 
-  const filteredMenu = menu.filter((item) => {
-    if (activeCategory === "All") return true;
-    if (activeSubCategory) return item.category === activeSubCategory;
-    return categoryHierarchy[activeCategory]?.includes(item.category);
-  });
+  const filteredMenu = Array.isArray(menu)
+    ? menu.filter((item) => {
+        if (activeCategory === "All") return true;
+        if (activeSubCategory) return item.category === activeSubCategory;
+        return categoryHierarchy[activeCategory]?.includes(item.category);
+      })
+    : [];
 
   return (
     <div className="p-4">
       <h1 className="text-3xl font-bold mb-1">Menu</h1>
       <p className="text-gray-500 mb-4">Table {tableNumber}</p>
 
-      {/* PARENT CATEGORY BUTTONS */}
+      {/* CATEGORY BUTTONS */}
       <div className="flex gap-3 overflow-x-auto py-2 mb-2">
         {categories.map((cat) => (
           <button
@@ -79,31 +70,29 @@ const MenuPage = () => {
               setActiveCategory(cat);
               setActiveSubCategory(null);
             }}
-            className={`px-4 py-2 rounded-full border text-sm
-              ${
-                activeCategory === cat
-                  ? "bg-red-500 text-white"
-                  : "bg-white text-gray-700"
-              }`}
+            className={`px-4 py-2 rounded-full border text-sm ${
+              activeCategory === cat
+                ? "bg-red-500 text-white"
+                : "bg-white text-gray-700"
+            }`}
           >
             {cat}
           </button>
         ))}
       </div>
 
-      {/* SUB CATEGORY BUTTONS */}
+      {/* SUB CATEGORY */}
       {subCategories.length > 0 && (
         <div className="flex gap-2 overflow-x-auto py-2 mb-4">
           {subCategories.map((sub) => (
             <button
               key={sub}
               onClick={() => setActiveSubCategory(sub)}
-              className={`px-3 py-1 rounded-full border text-xs
-                ${
-                  activeSubCategory === sub
-                    ? "bg-black text-white"
-                    : "bg-gray-100 text-gray-700"
-                }`}
+              className={`px-3 py-1 rounded-full border text-xs ${
+                activeSubCategory === sub
+                  ? "bg-black text-white"
+                  : "bg-gray-100 text-gray-700"
+              }`}
             >
               {sub}
             </button>
@@ -111,7 +100,7 @@ const MenuPage = () => {
         </div>
       )}
 
-      {/* MENU ITEMS */}
+      {/* MENU */}
       {filteredMenu.length === 0 ? (
         <p className="text-gray-500">No items available.</p>
       ) : (
