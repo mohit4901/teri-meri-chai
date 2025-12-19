@@ -235,7 +235,7 @@ const OrderForm = () => {
           rows={3}
           className="w-full p-2 border rounded resize-none"
         />
-
+<h4>Taxes will be included in final payment</h4>
         {/* Pay */}
         <button
           onClick={handlePayment}
