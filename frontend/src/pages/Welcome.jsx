@@ -6,7 +6,8 @@ import { FiInstagram, FiYoutube } from "react-icons/fi";
 import SimpleCarousel from "../components/Carousel";
 import heroBg from "../assets/tmc12.webp";
 
-const API = "http://localhost:4000/api/reviews";
+const API = `${import.meta.env.VITE_API_URL}/api/reviews`;
+
 
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
