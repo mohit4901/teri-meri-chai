@@ -7,35 +7,42 @@ export function CartProvider({ children }) {
   const [cart, setCart] = useState([]);
   const [tableNumber, setTableNumber] = useState(null);
   const [menu, setMenu] = useState([]);
+  const [loadingMenu, setLoadingMenu] = useState(true);
 
-  // Extract table number from URL ?table=12
+  // Table number
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const table = params.get("table");
     if (table) setTableNumber(table);
   }, []);
 
-  // Add item to cart
+  // 🚀 MENU FETCH (FAST)
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_URL}/api/menu`)
+      .then((res) => res.json())
+      .then((data) => {
+        setMenu(data);
+        setLoadingMenu(false);
+      })
+      .catch(() => setLoadingMenu(false));
+  }, []);
+
   const addItem = (item) => {
     setCart((prev) => {
       const exists = prev.find((p) => p._id === item._id);
-
       if (exists) {
         return prev.map((p) =>
           p._id === item._id ? { ...p, qty: p.qty + 1 } : p
         );
       }
-
       return [...prev, { ...item, qty: 1 }];
     });
   };
 
-  // Remove item
   const removeItem = (id) => {
     setCart((prev) => prev.filter((item) => item._id !== id));
   };
 
-  // Increase quantity
   const increaseQty = (id) => {
     setCart((prev) =>
       prev.map((item) =>
@@ -44,7 +51,6 @@ export function CartProvider({ children }) {
     );
   };
 
-  // Decrease quantity
   const decreaseQty = (id) => {
     setCart((prev) =>
       prev
@@ -55,21 +61,20 @@ export function CartProvider({ children }) {
     );
   };
 
-  // Clear cart after successful payment
   const clearCart = () => setCart([]);
 
   return (
     <CartContext.Provider
       value={{
         cart,
+        menu,
+        loadingMenu,
         addItem,
         removeItem,
         increaseQty,
         decreaseQty,
-        menu,
-        setMenu,
         tableNumber,
-        clearCart,
+        clearCart
       }}
     >
       {children}
