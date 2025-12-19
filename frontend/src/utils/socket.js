@@ -1,7 +1,10 @@
 import { io } from "socket.io-client";
 
-export const socket = io(import.meta.env.VITE_BACKEND_URL || "http://localhost:4000", {
-  transports: ["websocket"],
-  withCredentials: true,
-  autoConnect: true,
-});
+export const socket = io(
+  import.meta.env.VITE_API_URL || "http://localhost:4000",
+  {
+    transports: ["websocket"],
+    withCredentials: true,
+    autoConnect: false // 🔥 IMPORTANT
+  }
+);
