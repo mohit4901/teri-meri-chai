@@ -16,15 +16,26 @@ export function CartProvider({ children }) {
     if (table) setTableNumber(table);
   }, []);
 
-  // 🚀 MENU FETCH (FAST)
+  // ✅ SINGLE SOURCE OF TRUTH — MENU FETCH
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/api/menu`)
-      .then((res) => res.json())
-      .then((data) => {
-        setMenu(data);
+    const fetchMenu = async () => {
+      try {
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/menu`
+        );
+        if (!res.ok) throw new Error("Menu fetch failed");
+
+        const data = await res.json();
+        setMenu(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Menu Fetch Error:", err);
+        setMenu([]);
+      } finally {
         setLoadingMenu(false);
-      })
-      .catch(() => setLoadingMenu(false));
+      }
+    };
+
+    fetchMenu();
   }, []);
 
   const addItem = (item) => {
@@ -39,19 +50,17 @@ export function CartProvider({ children }) {
     });
   };
 
-  const removeItem = (id) => {
+  const removeItem = (id) =>
     setCart((prev) => prev.filter((item) => item._id !== id));
-  };
 
-  const increaseQty = (id) => {
+  const increaseQty = (id) =>
     setCart((prev) =>
       prev.map((item) =>
         item._id === id ? { ...item, qty: item.qty + 1 } : item
       )
     );
-  };
 
-  const decreaseQty = (id) => {
+  const decreaseQty = (id) =>
     setCart((prev) =>
       prev
         .map((item) =>
@@ -59,7 +68,6 @@ export function CartProvider({ children }) {
         )
         .filter((item) => item.qty > 0)
     );
-  };
 
   const clearCart = () => setCart([]);
 
@@ -69,11 +77,11 @@ export function CartProvider({ children }) {
         cart,
         menu,
         loadingMenu,
+        tableNumber,
         addItem,
         removeItem,
         increaseQty,
         decreaseQty,
-        tableNumber,
         clearCart
       }}
     >
