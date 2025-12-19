@@ -21,12 +21,13 @@ export function CartProvider({ children }) {
     const fetchMenu = async () => {
       try {
         const res = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/menu`
+          `${import.meta.env.VITE_API_URL}/api/menu/all`
         );
         if (!res.ok) throw new Error("Menu fetch failed");
 
         const data = await res.json();
-        setMenu(Array.isArray(data) ? data : []);
+        // backend response: { success: true, menu: [] }
+        setMenu(Array.isArray(data.menu) ? data.menu : []);
       } catch (err) {
         console.error("Menu Fetch Error:", err);
         setMenu([]);
