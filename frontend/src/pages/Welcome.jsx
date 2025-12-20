@@ -5,7 +5,7 @@ import { FiInstagram, FiYoutube } from "react-icons/fi";
 
 import SimpleCarousel from "../components/Carousel";
 import heroBg from "../assets/tmc12.webp";
-import api from "../services/api"; // ✅ FIXED (IMPORTANT)
+import api from "../services/api"; // ✅ ONLY CORRECT IMPORT
 
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
@@ -170,4 +170,3 @@ const Welcome = () => {
 };
 
 export default Welcome;
-
