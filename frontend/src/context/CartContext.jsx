@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import api from "../services/api"; // ✅ FIXED: default import
+import { api } from "../services/api"; // ✅ NAMED IMPORT (FIXED)
 
 export const CartContext = createContext();
 export const useCart = () => useContext(CartContext);
@@ -10,23 +10,19 @@ export function CartProvider({ children }) {
   const [menu, setMenu] = useState([]);
   const [loadingMenu, setLoadingMenu] = useState(true);
 
-  // ===============================
   // TABLE NUMBER FROM URL
-  // ===============================
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const table = params.get("table");
     if (table) setTableNumber(table);
   }, []);
 
-  // ===============================
   // FETCH MENU
-  // ===============================
   useEffect(() => {
     const fetchMenu = async () => {
       try {
         const res = await api.get("/api/menu/all");
-        setMenu(Array.isArray(res.data?.menu) ? res.data.menu : []);
+        setMenu(Array.isArray(res.data.menu) ? res.data.menu : []);
       } catch (err) {
         console.error("Menu Fetch Error:", err);
         setMenu([]);
@@ -38,9 +34,7 @@ export function CartProvider({ children }) {
     fetchMenu();
   }, []);
 
-  // ===============================
   // CART ACTIONS
-  // ===============================
   const addItem = (item) => {
     setCart((prev) => {
       const exists = prev.find((p) => p._id === item._id);
@@ -53,19 +47,17 @@ export function CartProvider({ children }) {
     });
   };
 
-  const removeItem = (id) => {
+  const removeItem = (id) =>
     setCart((prev) => prev.filter((item) => item._id !== id));
-  };
 
-  const increaseQty = (id) => {
+  const increaseQty = (id) =>
     setCart((prev) =>
       prev.map((item) =>
         item._id === id ? { ...item, qty: item.qty + 1 } : item
       )
     );
-  };
 
-  const decreaseQty = (id) => {
+  const decreaseQty = (id) =>
     setCart((prev) =>
       prev
         .map((item) =>
@@ -75,13 +67,9 @@ export function CartProvider({ children }) {
         )
         .filter((item) => item.qty > 0)
     );
-  };
 
   const clearCart = () => setCart([]);
 
-  // ===============================
-  // CONTEXT PROVIDER
-  // ===============================
   return (
     <CartContext.Provider
       value={{
