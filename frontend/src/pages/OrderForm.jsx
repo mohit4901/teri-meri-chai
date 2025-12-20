@@ -4,9 +4,19 @@ import { api } from "../services/api";
 import { useNavigate } from "react-router-dom";
 
 const CUSTOMISATIONS = [
-  { label: "Extra Cheese", price: 30 },
-  { label: "Extra Butter", price: 20 },
-  { label: "Extra Spicy", price: 10 },
+  { label: "Extra Dip (White Cheeze)", price: 20 },
+  { label: "Extra Dip (Mayo)", price: 20 },
+  { label: "Extra Dip (Tandoori)", price: 30 },
+  { label: "Extra Dip (Chilli Garlic)", price: 30 },
+  { label: "Extra Cheese (S pizza)", price: 15 },
+  { label: "Extra Cheese (M pizza)", price: 20 },
+  { label: "Extra Cheese (L pizza)", price: 30 },
+  { label: "Thin Crust (S Pizza)", price: 10 },
+  { label: "Thin Crust (M Pizza)", price: 15 },
+  { label: "Thin Crust (L Pizza)", price: 30 },
+  { label: "Extra Single Topping (S Pizza)", price: 10 },
+  { label: "Extra Single Topping (M Pizza)", price: 15 },
+  { label: "Extra Single Topping (L Pizza)", price: 30 },
 ];
 
 const OrderForm = () => {
