@@ -5,7 +5,7 @@ import { FiInstagram, FiYoutube } from "react-icons/fi";
 
 import SimpleCarousel from "../components/Carousel";
 import heroBg from "../assets/tmc12.webp";
-import { api } from "../services/api"; // ✅ NAMED EXPORT (CORRECT)
+import { api } from "../services/api"; // ✅ named export (correct)
 
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
@@ -27,7 +27,6 @@ const Welcome = () => {
         setReviews([]);
       }
     };
-
     fetchReviews();
   }, []);
 
@@ -96,11 +95,10 @@ const Welcome = () => {
             <h2 className="whitespace-pre-line text-[26px] font-semibold leading-tight text-red-500 md:text-4xl md:w-5/12 lg:text-6xl lg:w-8/12">
               Better place to{"\n"}hangout
             </h2>
-
             <p className="mt-6 max-w-[220px] text-sm font-light text-gray-500 md:mt-10 md:max-w-md">
               For years, Ye Teri Meri Chai has been bringing people together over
-              freshly brewed chai, comforting flavours, and moments worth
-              sharing — delivered with warmth and care.
+              freshly brewed chai, comforting flavours, and moments worth sharing
+              — delivered with warmth and care.
             </p>
           </div>
 
@@ -109,13 +107,11 @@ const Welcome = () => {
             alt=""
             className="absolute left-0 top-[30%] size-[90px] rounded-lg md:left-[-20px] md:size-[293px] xl:left-44"
           />
-
           <img
             src="https://b.zmtcdn.com/data/o2_assets/3d1b3a891e2c59fd5ae7654dd207370b1739514134.png"
             alt=""
             className="absolute right-0 top-0 h-[100px] w-[122px] rounded-lg md:right-[5%] md:h-52 md:w-72 xl:right-[15%]"
           />
-
           <img
             src="https://b.zmtcdn.com/data/o2_assets/c7523de995639024918c6947c4b2cdcd1742894059.png"
             alt=""
@@ -148,6 +144,38 @@ const Welcome = () => {
           </div>
         </section>
 
+        {/* ================= ZOMATO CTA ================= */}
+        <section className="bg-black py-24">
+          <motion.div
+            initial={{ opacity: 0, y: 60 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="flex flex-col items-center text-white text-center px-4"
+          >
+            <h2 className="text-[22px] sm:text-[26px] font-semibold mb-4">
+              Ye Teri Meri Chai is also on
+            </h2>
+            <img
+              src="https://b.zmtcdn.com/web_assets/8313a97515fcb0447d2d77c276532a511583262271.png"
+              alt="Zomato"
+              className="h-8 w-[152px] mb-10"
+            />
+            <p className="text-sm text-gray-300 max-w-sm">
+              Experience fast & easy online ordering from Teri Meri Chai
+            </p>
+            <a
+              href="https://www.zomato.com/panipat/ye-teri-meri-chai-tehsil-camp"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <button className="mt-10 rounded-xl bg-red-600 px-6 py-3 hover:bg-red-700 transition">
+                Order on App
+              </button>
+            </a>
+          </motion.div>
+        </section>
+
         {/* ================= REVIEWS ================= */}
         <section className="py-20 bg-black text-white px-4 overflow-hidden">
           <div className="max-w-6xl mx-auto grid gap-12 md:grid-cols-2 items-center">
@@ -173,11 +201,7 @@ const Welcome = () => {
                     key={s}
                     type="button"
                     onClick={() => setForm({ ...form, stars: s })}
-                    className={
-                      s <= form.stars
-                        ? "text-yellow-500 text-xl"
-                        : "text-gray-400 text-xl"
-                    }
+                    className={s <= form.stars ? "text-yellow-500 text-xl" : "text-gray-400 text-xl"}
                   >
                     ★
                   </button>
