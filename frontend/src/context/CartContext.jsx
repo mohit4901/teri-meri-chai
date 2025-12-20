@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { api } from "../utils/api";
+import { api } from "../services/api";
 
 export const CartContext = createContext();
 export const useCart = () => useContext(CartContext);
@@ -10,14 +10,18 @@ export function CartProvider({ children }) {
   const [menu, setMenu] = useState([]);
   const [loadingMenu, setLoadingMenu] = useState(true);
 
-  // Table number
+  // ===============================
+  // TABLE NUMBER FROM URL
+  // ===============================
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const table = params.get("table");
     if (table) setTableNumber(table);
   }, []);
 
-  // ✅ MENU FETCH (FIXED)
+  // ===============================
+  // FETCH MENU
+  // ===============================
   useEffect(() => {
     const fetchMenu = async () => {
       try {
@@ -34,6 +38,9 @@ export function CartProvider({ children }) {
     fetchMenu();
   }, []);
 
+  // ===============================
+  // CART ACTIONS
+  // ===============================
   const addItem = (item) => {
     setCart((prev) => {
       const exists = prev.find((p) => p._id === item._id);
@@ -60,13 +67,18 @@ export function CartProvider({ children }) {
     setCart((prev) =>
       prev
         .map((item) =>
-          item._id === id ? { ...item, qty: Math.max(1, item.qty - 1) } : item
+          item._id === id
+            ? { ...item, qty: Math.max(1, item.qty - 1) }
+            : item
         )
         .filter((item) => item.qty > 0)
     );
 
   const clearCart = () => setCart([]);
 
+  // ===============================
+  // CONTEXT PROVIDER
+  // ===============================
   return (
     <CartContext.Provider
       value={{
