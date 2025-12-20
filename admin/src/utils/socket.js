@@ -1,9 +1,10 @@
 import { io } from "socket.io-client";
 
 export const socket = io(import.meta.env.VITE_BACKEND_URL, {
-  transports: ["polling", "websocket"], // Render safe
-  withCredentials: false,
+  transports: ["websocket"], // 🔥 polling removed (delay killer)
+  autoConnect: false,        // 🔥 manual control
   reconnection: true,
-  reconnectionAttempts: 10,
+  reconnectionAttempts: 5,
+  reconnectionDelay: 1000,
   timeout: 20000
 });
