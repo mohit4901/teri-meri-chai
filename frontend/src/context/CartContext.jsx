@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { api } from "../services/api";
+import api from "../services/api"; // ✅ FIXED: default import
 
 export const CartContext = createContext();
 export const useCart = () => useContext(CartContext);
@@ -26,7 +26,7 @@ export function CartProvider({ children }) {
     const fetchMenu = async () => {
       try {
         const res = await api.get("/api/menu/all");
-        setMenu(Array.isArray(res.data.menu) ? res.data.menu : []);
+        setMenu(Array.isArray(res.data?.menu) ? res.data.menu : []);
       } catch (err) {
         console.error("Menu Fetch Error:", err);
         setMenu([]);
@@ -53,17 +53,19 @@ export function CartProvider({ children }) {
     });
   };
 
-  const removeItem = (id) =>
+  const removeItem = (id) => {
     setCart((prev) => prev.filter((item) => item._id !== id));
+  };
 
-  const increaseQty = (id) =>
+  const increaseQty = (id) => {
     setCart((prev) =>
       prev.map((item) =>
         item._id === id ? { ...item, qty: item.qty + 1 } : item
       )
     );
+  };
 
-  const decreaseQty = (id) =>
+  const decreaseQty = (id) => {
     setCart((prev) =>
       prev
         .map((item) =>
@@ -73,6 +75,7 @@ export function CartProvider({ children }) {
         )
         .filter((item) => item.qty > 0)
     );
+  };
 
   const clearCart = () => setCart([]);
 
