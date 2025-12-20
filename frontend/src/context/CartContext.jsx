@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { api } from "../services/api"; // ✅ NAMED IMPORT (FIXED)
+import { api } from "../services/api"; // ✅ FIXED (named import)
 
 export const CartContext = createContext();
 export const useCart = () => useContext(CartContext);
@@ -10,31 +10,27 @@ export function CartProvider({ children }) {
   const [menu, setMenu] = useState([]);
   const [loadingMenu, setLoadingMenu] = useState(true);
 
-  // TABLE NUMBER FROM URL
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const table = params.get("table");
     if (table) setTableNumber(table);
   }, []);
 
-  // FETCH MENU
   useEffect(() => {
     const fetchMenu = async () => {
       try {
         const res = await api.get("/api/menu/all");
         setMenu(Array.isArray(res.data.menu) ? res.data.menu : []);
       } catch (err) {
-        console.error("Menu Fetch Error:", err);
+        console.error(err);
         setMenu([]);
       } finally {
         setLoadingMenu(false);
       }
     };
-
     fetchMenu();
   }, []);
 
-  // CART ACTIONS
   const addItem = (item) => {
     setCart((prev) => {
       const exists = prev.find((p) => p._id === item._id);
