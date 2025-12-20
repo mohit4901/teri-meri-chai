@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import { api } from "../utils/api";
 
 export const CartContext = createContext();
 export const useCart = () => useContext(CartContext);
@@ -16,18 +17,12 @@ export function CartProvider({ children }) {
     if (table) setTableNumber(table);
   }, []);
 
-  // ✅ SINGLE SOURCE OF TRUTH — MENU FETCH
+  // ✅ MENU FETCH (FIXED)
   useEffect(() => {
     const fetchMenu = async () => {
       try {
-        const res = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/menu/all`
-        );
-        if (!res.ok) throw new Error("Menu fetch failed");
-
-        const data = await res.json();
-        // backend response: { success: true, menu: [] }
-        setMenu(Array.isArray(data.menu) ? data.menu : []);
+        const res = await api.get("/api/menu/all");
+        setMenu(Array.isArray(res.data.menu) ? res.data.menu : []);
       } catch (err) {
         console.error("Menu Fetch Error:", err);
         setMenu([]);
@@ -83,7 +78,7 @@ export function CartProvider({ children }) {
         removeItem,
         increaseQty,
         decreaseQty,
-        clearCart
+        clearCart,
       }}
     >
       {children}
