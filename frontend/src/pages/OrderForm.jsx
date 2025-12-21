@@ -38,25 +38,23 @@ const OrderForm = () => {
       return;
     }
 
+    if (!cart || cart.length === 0) {
+      alert("Cart is empty");
+      return;
+    }
+
     try {
+      // 🔹 CREATE RAZORPAY ORDER
       const res = await api.post("/api/restaurant-order/create", {
-        orderType,
-        tableNumber: orderType === "dine-in" ? form.tableNumber : null,
-        customer: {
-          name: form.name,
-          phone: form.phone
-        },
-        note: form.note,
-        items: cart,
         amount: totalAmount
       });
 
       if (!res.data.success) {
-        alert("Order creation failed");
+        alert("Unable to initiate payment");
         return;
       }
 
-      const { orderId, razorpayOrder } = res.data;
+      const { razorpayOrder } = res.data;
 
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
@@ -66,18 +64,40 @@ const OrderForm = () => {
         description: "Food Order Payment",
         order_id: razorpayOrder.id,
 
+        // 🔥 FIXED VERIFY HANDLER
         handler: async function (response) {
-          const verifyRes = await api.post("/api/restaurant-order/verify", {
-            orderId,
-            razorpayPaymentId: response.razorpay_payment_id,
-            razorpayOrderId: response.razorpay_order_id,
-            razorpaySignature: response.razorpay_signature
-          });
+          try {
+            const verifyRes = await api.post(
+              "/api/restaurant-order/verify",
+              {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
 
-          if (verifyRes.data.success) {
-            clearCart();
-            navigate("/verify?status=success");
-          } else {
+                tableNumber:
+                  orderType === "dine-in"
+                    ? form.tableNumber
+                    : "TAKEAWAY",
+
+                customerName: form.name,
+                customerMobile: form.phone,
+
+                items: cart,
+                subtotal: baseAmount,
+                tax: 0,
+                total: totalAmount,
+                notes: form.note
+              }
+            );
+
+            if (verifyRes.data.success) {
+              clearCart();
+              navigate("/verify?status=success");
+            } else {
+              navigate("/verify?status=failed");
+            }
+          } catch (err) {
+            console.error("VERIFY ERROR 👉", err);
             navigate("/verify?status=failed");
           }
         },
@@ -92,7 +112,7 @@ const OrderForm = () => {
 
       new window.Razorpay(options).open();
     } catch (err) {
-      console.error(err);
+      console.error("PAYMENT SETUP ERROR 👉", err);
       alert("Payment setup failed");
     }
   };
@@ -104,7 +124,6 @@ const OrderForm = () => {
       </h1>
 
       <div className="bg-white shadow rounded-lg p-5 space-y-5">
-
         {/* Order Type */}
         <div className="flex gap-3">
           <button
