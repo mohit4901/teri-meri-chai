@@ -59,7 +59,6 @@ const Kitchen = () => {
       setOrders((prev) => prev.filter((o) => o._id !== orderId));
     });
 
-    // 🔥 IMPORTANT: DO NOT disconnect socket on unmount
     return () => {
       socket.off("new-order");
       socket.off("order-updated");
@@ -68,13 +67,15 @@ const Kitchen = () => {
   }, []);
 
   // ===============================
-  // INITIAL + FALLBACK FETCH (NO ORDER LOSS)
+  // INITIAL + FALLBACK FETCH (FIXED)
   // ===============================
   useEffect(() => {
     const fetchOrders = async () => {
       try {
         const res = await api.get("/api/restaurant-order/all");
-        setOrders(res.data.data || []);
+
+        // 🔥 MAIN FIX HERE
+        setOrders(Array.isArray(res.data) ? res.data : []);
       } catch (err) {
         console.error("Failed to fetch orders");
       }
@@ -82,8 +83,7 @@ const Kitchen = () => {
 
     fetchOrders(); // initial load
 
-    const interval = setInterval(fetchOrders, 3000); // 🔥 fallback every 3s
-
+    const interval = setInterval(fetchOrders, 3000); // fallback every 3s
     return () => clearInterval(interval);
   }, []);
 
