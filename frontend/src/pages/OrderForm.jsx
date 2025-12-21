@@ -3,22 +3,6 @@ import { useCart } from "../context/CartContext";
 import { api } from "../services/api";
 import { useNavigate } from "react-router-dom";
 
-const CUSTOMISATIONS = [
-  { label: "Extra Dip (White Cheeze)", price: 20 },
-  { label: "Extra Dip (Mayo)", price: 20 },
-  { label: "Extra Dip (Tandoori)", price: 30 },
-  { label: "Extra Dip (Chilli Garlic)", price: 30 },
-  { label: "Extra Cheese (S pizza)", price: 15 },
-  { label: "Extra Cheese (M pizza)", price: 20 },
-  { label: "Extra Cheese (L pizza)", price: 30 },
-  { label: "Thin Crust (S Pizza)", price: 10 },
-  { label: "Thin Crust (M Pizza)", price: 15 },
-  { label: "Thin Crust (L Pizza)", price: 30 },
-  { label: "Extra Single Topping (S Pizza)", price: 10 },
-  { label: "Extra Single Topping (M Pizza)", price: 15 },
-  { label: "Extra Single Topping (L Pizza)", price: 30 },
-];
-
 const OrderForm = () => {
   const { cart, clearCart } = useCart();
   const navigate = useNavigate();
@@ -29,8 +13,7 @@ const OrderForm = () => {
     tableNumber: "",
     name: "",
     phone: "",
-    note: "",
-    customisations: [],
+    note: ""
   });
 
   const baseAmount = cart.reduce(
@@ -38,30 +21,10 @@ const OrderForm = () => {
     0
   );
 
-  const customisationAmount = form.customisations.reduce(
-    (sum, c) => sum + c.price,
-    0
-  );
-
-  const totalAmount = baseAmount + customisationAmount;
+  const totalAmount = baseAmount;
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const toggleCustomisation = (item) => {
-    const exists = form.customisations.find(c => c.label === item.label);
-    if (exists) {
-      setForm({
-        ...form,
-        customisations: form.customisations.filter(c => c.label !== item.label),
-      });
-    } else {
-      setForm({
-        ...form,
-        customisations: [...form.customisations, item],
-      });
-    }
   };
 
   const handlePayment = async () => {
@@ -81,12 +44,11 @@ const OrderForm = () => {
         tableNumber: orderType === "dine-in" ? form.tableNumber : null,
         customer: {
           name: form.name,
-          phone: form.phone,
+          phone: form.phone
         },
         note: form.note,
-        customisations: form.customisations,
         items: cart,
-        amount: totalAmount,
+        amount: totalAmount
       });
 
       if (!res.data.success) {
@@ -109,7 +71,7 @@ const OrderForm = () => {
             orderId,
             razorpayPaymentId: response.razorpay_payment_id,
             razorpayOrderId: response.razorpay_order_id,
-            razorpaySignature: response.razorpay_signature,
+            razorpaySignature: response.razorpay_signature
           });
 
           if (verifyRes.data.success) {
@@ -122,10 +84,10 @@ const OrderForm = () => {
 
         prefill: {
           name: form.name,
-          contact: form.phone,
+          contact: form.phone
         },
 
-        theme: { color: "#EF4444" },
+        theme: { color: "#EF4444" }
       };
 
       new window.Razorpay(options).open();
@@ -168,7 +130,7 @@ const OrderForm = () => {
           </button>
         </div>
 
-        {/* Table Number (Only for Dine In) */}
+        {/* Table Number */}
         {orderType === "dine-in" && (
           <div>
             <label className="block text-sm font-medium mb-1">
@@ -213,29 +175,6 @@ const OrderForm = () => {
           />
         </div>
 
-        {/* Paid Customisation */}
-        <div>
-          <p className="text-sm font-medium mb-2">
-            Food Customisation (Extra Charges)
-          </p>
-          <div className="space-y-2">
-            {CUSTOMISATIONS.map((c) => (
-              <label key={c.label} className="flex justify-between items-center">
-                <span>
-                  <input
-                    type="checkbox"
-                    checked={form.customisations.some(x => x.label === c.label)}
-                    onChange={() => toggleCustomisation(c)}
-                    className="mr-2"
-                  />
-                  {c.label}
-                </span>
-                <span className="text-sm text-gray-600">₹{c.price}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-
         {/* Note */}
         <textarea
           name="note"
@@ -245,7 +184,9 @@ const OrderForm = () => {
           rows={3}
           className="w-full p-2 border rounded resize-none"
         />
-<h4>Taxes will be included in final payment</h4>
+
+        <h4>Taxes will be included in final payment</h4>
+
         {/* Pay */}
         <button
           onClick={handlePayment}
