@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { socket } from "../utils/socket";
 import api from "../utils/api";
-import { playBeep } from "../utils/sound";
+import { unlockSound, playBeep } from "../utils/sound";
 
 const Kitchen = () => {
   const [orders, setOrders] = useState([]);
