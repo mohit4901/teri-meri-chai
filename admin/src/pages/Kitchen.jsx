@@ -9,15 +9,17 @@ const Kitchen = () => {
   const audioUnlockedRef = useRef(false);
 
   // 🔓 USER INTERACTION → UNLOCK AUDIO
-  const enableSound = () => {
-    try {
-      playBeep(); // unlock AudioContext
-      audioUnlockedRef.current = true;
-      setSoundEnabled(true);
-    } catch (e) {
-      console.error("Sound unlock failed");
-    }
-  };
+ const enableSound = () => {
+  try {
+    unlockSound(); // 🔥 handles AudioContext + test beep
+    audioUnlockedRef.current = true;
+    setSoundEnabled(true);
+    localStorage.setItem("soundEnabled", "true"); // ✅ PERSIST
+  } catch (e) {
+    console.error("Sound unlock failed");
+  }
+};
+
 
   // ===============================
   // SOCKET SETUP
