@@ -1,7 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { socket } from "../utils/socket";
 import api from "../utils/api";
-import { unlockSound, playBeep } from "../utils/sound";
+import {
+  unlockSound,
+  playBeep,
+  tryAutoRestoreSound   // 🔥 NEW
+} from "../utils/sound";
 
 const Kitchen = () => {
   const [orders, setOrders] = useState([]);
@@ -20,13 +24,17 @@ const Kitchen = () => {
     }
   };
 
-  // 🔁 RESTORE SOUND STATE
+  // 🔥 AUTO RESTORE SOUND AFTER REFRESH (NEW)
   useEffect(() => {
-    const enabled = localStorage.getItem("soundEnabled") === "true";
-    if (enabled) {
-      audioUnlockedRef.current = true;
-      setSoundEnabled(true);
-    }
+    const restore = async () => {
+      const restored = await tryAutoRestoreSound();
+      if (restored) {
+        audioUnlockedRef.current = true;
+        setSoundEnabled(true);
+        console.log("🔊 Sound auto-restored");
+      }
+    };
+    restore();
   }, []);
 
   // ===============================
@@ -107,13 +115,11 @@ const Kitchen = () => {
 
         return (
           <div key={order._id} className="p-4 bg-white border rounded mb-4">
-            {/* HEADER */}
             <div className="flex items-center justify-between mb-3">
               <h2 className="font-bold text-lg">
                 Order #{order.dailyOrderNumber ?? i + 1}
               </h2>
 
-              {/* 🔥 BIG STATUS BUTTON */}
               <div
                 className={`px-5 py-2 rounded-lg text-white font-bold text-lg ${
                   isPaid ? "bg-green-600" : "bg-red-600"
@@ -150,4 +156,3 @@ const Kitchen = () => {
 };
 
 export default Kitchen;
-
