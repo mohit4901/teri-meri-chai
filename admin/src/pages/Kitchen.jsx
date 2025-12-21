@@ -67,23 +67,20 @@ const Kitchen = () => {
   }, []);
 
   // ===============================
-  // INITIAL + FALLBACK FETCH (FIXED)
+  // INITIAL + FALLBACK FETCH
   // ===============================
   useEffect(() => {
     const fetchOrders = async () => {
       try {
         const res = await api.get("/api/restaurant-order/all");
-
-        // 🔥 MAIN FIX HERE
         setOrders(Array.isArray(res.data) ? res.data : []);
       } catch (err) {
         console.error("Failed to fetch orders");
       }
     };
 
-    fetchOrders(); // initial load
-
-    const interval = setInterval(fetchOrders, 3000); // fallback every 3s
+    fetchOrders();
+    const interval = setInterval(fetchOrders, 3000);
     return () => clearInterval(interval);
   }, []);
 
@@ -105,32 +102,49 @@ const Kitchen = () => {
         </button>
       )}
 
-      {orders.map((order, i) => (
-        <div key={order._id} className="p-4 bg-white border rounded mb-4">
-          <h2 className="font-bold">
-            Order #{order.dailyOrderNumber ?? i + 1}
-          </h2>
-          <p>Table: {order.tableNumber}</p>
-          <p>Customer: {order.customerName}</p>
+      {orders.map((order, i) => {
+        const isPaid = order.status === "paid";
 
-          <ul className="ml-5 list-disc">
-            {order.items.map((it, idx) => (
-              <li key={idx}>
-                {it.name} × {it.qty}
-              </li>
-            ))}
-          </ul>
+        return (
+          <div key={order._id} className="p-4 bg-white border rounded mb-4">
+            {/* HEADER */}
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-bold text-lg">
+                Order #{order.dailyOrderNumber ?? i + 1}
+              </h2>
 
-          <p className="font-semibold mt-2">₹{order.total}</p>
+              {/* 🔥 BIG STATUS BUTTON */}
+              <div
+                className={`px-5 py-2 rounded-lg text-white font-bold text-lg ${
+                  isPaid ? "bg-green-600" : "bg-red-600"
+                }`}
+              >
+                {isPaid ? "PAID" : "UNPAID"}
+              </div>
+            </div>
 
-          <button
-            onClick={() => deleteOrder(order._id)}
-            className="mt-2 bg-red-600 text-white w-full py-1 rounded"
-          >
-            Delete Order
-          </button>
-        </div>
-      ))}
+            <p className="text-sm">Table: {order.tableNumber}</p>
+            <p className="text-sm">Customer: {order.customerName}</p>
+
+            <ul className="ml-5 list-disc mt-2">
+              {order.items.map((it, idx) => (
+                <li key={idx}>
+                  {it.name} × {it.qty}
+                </li>
+              ))}
+            </ul>
+
+            <p className="font-semibold mt-3 text-lg">₹{order.total}</p>
+
+            <button
+              onClick={() => deleteOrder(order._id)}
+              className="mt-3 bg-red-600 text-white w-full py-2 rounded font-semibold"
+            >
+              Delete Order
+            </button>
+          </div>
+        );
+      })}
     </div>
   );
 };
