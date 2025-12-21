@@ -1,67 +1,68 @@
 let audioCtx = null;
 
-export function unlockSound() {
-  try {
-    if (!audioCtx) {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
+function getAudioCtx() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  return audioCtx;
+}
 
-    if (audioCtx.state === "suspended") {
-      audioCtx.resume();
+export async function unlockSound() {
+  try {
+    const ctx = getAudioCtx();
+
+    // 🔥 VERY IMPORTANT: wait for resume
+    if (ctx.state === "suspended") {
+      await ctx.resume();
     }
 
     localStorage.setItem("soundEnabled", "true");
 
-    playBeep(); // 🔔 test sound (IMPORTANT)
+    // 🔔 test beep AFTER resume
+    playBeep(true);
   } catch (e) {
-    console.warn("Sound unlock failed");
+    console.warn("Sound unlock failed", e);
   }
 }
 
-// 🔥 NEW: auto restore sound after refresh
+// 🔥 auto restore sound after refresh (best effort)
 export async function tryAutoRestoreSound() {
   try {
-    const enabled = localStorage.getItem("soundEnabled") === "true";
-    if (!enabled) return false;
+    if (localStorage.getItem("soundEnabled") !== "true") return false;
 
-    if (!audioCtx) {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = getAudioCtx();
+    if (ctx.state === "suspended") {
+      await ctx.resume();
     }
 
-    if (audioCtx.state === "suspended") {
-      await audioCtx.resume();
-    }
-
-    return audioCtx.state === "running";
+    return ctx.state === "running";
   } catch {
     return false;
   }
 }
 
-export function playBeep() {
+export function playBeep(force = false) {
   try {
-    const enabled = localStorage.getItem("soundEnabled") === "true";
-    if (!enabled) return;
+    if (!force && localStorage.getItem("soundEnabled") !== "true") return;
 
-    if (!audioCtx) {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
+    const ctx = getAudioCtx();
+    if (ctx.state !== "running") return;
 
-    if (audioCtx.state !== "running") return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
 
-    const o = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
+    osc.type = "square";        // 🔥 loud & clear
+    osc.frequency.value = 1200;
 
-    o.type = "sine";
-    o.frequency.value = 1000;
-    o.connect(g);
-    g.connect(audioCtx.destination);
+    gain.gain.value = 0.6;      // 🔥 audible everywhere
 
-    g.gain.setValueAtTime(0.0001, audioCtx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.25, audioCtx.currentTime + 0.01);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
 
-    o.start();
-    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.35);
-    o.stop(audioCtx.currentTime + 0.36);
-  } catch {}
+    osc.start();
+    osc.stop(ctx.currentTime + 0.35);
+  } catch (e) {
+    console.log("beep error", e);
+  }
 }
+
