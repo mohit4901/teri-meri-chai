@@ -1,68 +1,58 @@
-let audioCtx = null;
+let audio = null;
 
-function getAudioCtx() {
-  if (!audioCtx) {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  return audioCtx;
-}
-
-export async function unlockSound() {
+// 🔓 user gesture se audio unlock
+export function unlockSound() {
   try {
-    const ctx = getAudioCtx();
-
-    // 🔥 VERY IMPORTANT: wait for resume
-    if (ctx.state === "suspended") {
-      await ctx.resume();
+    if (!audio) {
+      audio = new Audio("/alarm.mp3");
+      audio.preload = "auto";
+      audio.loop = false;
     }
+
+    audio.muted = false;
+    audio.volume = 1;
+
+    // 🔥 VERY IMPORTANT: silent play-pause unlock
+    audio.play().then(() => {
+      audio.pause();
+      audio.currentTime = 0;
+    });
 
     localStorage.setItem("soundEnabled", "true");
-
-    // 🔔 test beep AFTER resume
-    playBeep(true);
   } catch (e) {
-    console.warn("Sound unlock failed", e);
+    console.warn("Audio unlock failed", e);
   }
 }
 
-// 🔥 auto restore sound after refresh (best effort)
-export async function tryAutoRestoreSound() {
+// 🔁 refresh ke baad auto-restore try
+export function tryAutoRestoreSound() {
   try {
-    if (localStorage.getItem("soundEnabled") !== "true") return false;
+    const enabled = localStorage.getItem("soundEnabled") === "true";
+    if (!enabled) return false;
 
-    const ctx = getAudioCtx();
-    if (ctx.state === "suspended") {
-      await ctx.resume();
+    if (!audio) {
+      audio = new Audio("/alarm.mp3");
+      audio.preload = "auto";
     }
 
-    return ctx.state === "running";
+    audio.muted = false;
+    audio.volume = 1;
+    return true;
   } catch {
     return false;
   }
 }
 
-export function playBeep(force = false) {
+// 🔔 ORDER SOUND (GUARANTEED)
+export function playBeep() {
   try {
-    if (!force && localStorage.getItem("soundEnabled") !== "true") return;
+    const enabled = localStorage.getItem("soundEnabled") === "true";
+    if (!enabled || !audio) return;
 
-    const ctx = getAudioCtx();
-    if (ctx.state !== "running") return;
-
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    osc.type = "square";        // 🔥 loud & clear
-    osc.frequency.value = 1200;
-
-    gain.gain.value = 0.6;      // 🔥 audible everywhere
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start();
-    osc.stop(ctx.currentTime + 0.35);
+    audio.currentTime = 0;
+    audio.play(); // 🔥 WORKS on socket / polling / background
   } catch (e) {
-    console.log("beep error", e);
+    console.log("play error", e);
   }
 }
 
