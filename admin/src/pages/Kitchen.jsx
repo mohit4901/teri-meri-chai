@@ -4,7 +4,7 @@ import api from "../utils/api";
 import {
   unlockSound,
   playBeep,
-  tryAutoRestoreSound   // 🔥 NEW
+  tryAutoRestoreSound
 } from "../utils/sound";
 
 const Kitchen = () => {
@@ -12,7 +12,7 @@ const Kitchen = () => {
   const [soundEnabled, setSoundEnabled] = useState(false);
   const audioUnlockedRef = useRef(false);
 
-  // 🔓 USER INTERACTION → UNLOCK AUDIO
+  // 🔓 USER INTERACTION → UNLOCK AUDIO (FIRST TIME ONLY)
   const enableSound = () => {
     try {
       unlockSound();
@@ -24,17 +24,17 @@ const Kitchen = () => {
     }
   };
 
-  // 🔥 AUTO RESTORE SOUND AFTER REFRESH (NEW)
+  // 🔥 RESTORE SOUND STATE ON REFRESH (FINAL FIX)
   useEffect(() => {
-    const restore = async () => {
-      const restored = await tryAutoRestoreSound();
-      if (restored) {
-        audioUnlockedRef.current = true;
-        setSoundEnabled(true);
-        console.log("🔊 Sound auto-restored");
-      }
-    };
-    restore();
+    const enabled = localStorage.getItem("soundEnabled") === "true";
+
+    if (enabled) {
+      audioUnlockedRef.current = true; // 🔥 MOST IMPORTANT
+      setSoundEnabled(true);
+
+      // best-effort restore (browser allow kare to)
+      tryAutoRestoreSound();
+    }
   }, []);
 
   // ===============================
@@ -51,6 +51,7 @@ const Kitchen = () => {
     socket.on("new-order", (order) => {
       setOrders((prev) => [order, ...prev]);
 
+      // 🔔 ORDER SOUND
       if (audioUnlockedRef.current) {
         playBeep();
         navigator.vibrate?.([200, 100, 200]);
@@ -101,6 +102,7 @@ const Kitchen = () => {
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">🍳 Kitchen Panel</h1>
 
+      {/* 🔔 Enable Sound – ONLY FIRST TIME */}
       {!soundEnabled && (
         <button
           onClick={enableSound}
