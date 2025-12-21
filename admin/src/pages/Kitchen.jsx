@@ -21,6 +21,14 @@ const Kitchen = () => {
 };
 
 
+  useEffect(() => {
+  const enabled = localStorage.getItem("soundEnabled") === "true";
+  if (enabled) {
+    audioUnlockedRef.current = true;
+    setSoundEnabled(true);
+  }
+}, []);
+
   // ===============================
   // SOCKET SETUP
   // ===============================
