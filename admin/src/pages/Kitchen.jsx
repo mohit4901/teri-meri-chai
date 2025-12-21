@@ -1,44 +1,33 @@
 import React, { useEffect, useRef, useState } from "react";
 import { socket } from "../utils/socket";
 import api from "../utils/api";
-import {
-  unlockSound,
-  playBeep,
-  tryAutoRestoreSound
-} from "../utils/sound";
+import { unlockSound, playBeep } from "../utils/sound";
 
 const Kitchen = () => {
   const [orders, setOrders] = useState([]);
-  const [soundEnabled, setSoundEnabled] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(false); // session based
   const audioUnlockedRef = useRef(false);
 
-  // 🔓 USER INTERACTION → UNLOCK AUDIO (FIRST TIME ONLY)
-  const enableSound = () => {
+  // 🔔 USER GESTURE REQUIRED EVERY SESSION
+  const enableSound = async () => {
     try {
-      unlockSound();
+      await unlockSound(); // MUST be awaited
       audioUnlockedRef.current = true;
-      setSoundEnabled(true);
-      localStorage.setItem("soundEnabled", "true");
+      setSoundEnabled(true); // hide button after click
     } catch (e) {
       console.error("Sound unlock failed");
     }
   };
 
-  // 🔥 RESTORE SOUND STATE ON REFRESH (FINAL FIX)
+  // ❌ DO NOT AUTO-HIDE BUTTON ON REFRESH
+  // Browser requires fresh gesture
   useEffect(() => {
-    const enabled = localStorage.getItem("soundEnabled") === "true";
-
-    if (enabled) {
-      audioUnlockedRef.current = true; // 🔥 MOST IMPORTANT
-      setSoundEnabled(true);
-
-      // best-effort restore (browser allow kare to)
-      tryAutoRestoreSound();
-    }
+    audioUnlockedRef.current = false;
+    setSoundEnabled(false);
   }, []);
 
   // ===============================
-  // SOCKET SETUP (HYBRID REALTIME)
+  // SOCKET SETUP
   // ===============================
   useEffect(() => {
     socket.connect();
@@ -51,9 +40,8 @@ const Kitchen = () => {
     socket.on("new-order", (order) => {
       setOrders((prev) => [order, ...prev]);
 
-      // 🔔 ORDER SOUND
       if (audioUnlockedRef.current) {
-        playBeep();
+        playBeep(); // 🔔 MP3 alarm
         navigator.vibrate?.([200, 100, 200]);
       }
     });
@@ -76,7 +64,7 @@ const Kitchen = () => {
   }, []);
 
   // ===============================
-  // INITIAL + FALLBACK FETCH
+  // FETCH ORDERS
   // ===============================
   useEffect(() => {
     const fetchOrders = async () => {
@@ -102,14 +90,16 @@ const Kitchen = () => {
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">🍳 Kitchen Panel</h1>
 
-      {/* 🔔 Enable Sound – ONLY FIRST TIME */}
+      {/* 🔔 MUST CLICK EVERY REFRESH */}
       {!soundEnabled && (
-        <button
+        <div
           onClick={enableSound}
-          className="mb-4 bg-black text-white px-4 py-2 rounded"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 cursor-pointer"
         >
-          🔔 Enable Order Sound
-        </button>
+          <div className="bg-white px-6 py-4 rounded-lg font-bold text-lg">
+            🔔 Tap anywhere to enable order sound
+          </div>
+        </div>
       )}
 
       {orders.map((order, i) => {
