@@ -9,28 +9,28 @@ const Kitchen = () => {
   const audioUnlockedRef = useRef(false);
 
   // 🔓 USER INTERACTION → UNLOCK AUDIO
- const enableSound = () => {
-  try {
-    unlockSound(); // 🔥 handles AudioContext + test beep
-    audioUnlockedRef.current = true;
-    setSoundEnabled(true);
-    localStorage.setItem("soundEnabled", "true"); // ✅ PERSIST
-  } catch (e) {
-    console.error("Sound unlock failed");
-  }
-};
+  const enableSound = () => {
+    try {
+      unlockSound();
+      audioUnlockedRef.current = true;
+      setSoundEnabled(true);
+      localStorage.setItem("soundEnabled", "true");
+    } catch (e) {
+      console.error("Sound unlock failed");
+    }
+  };
 
-
+  // 🔁 RESTORE SOUND STATE
   useEffect(() => {
-  const enabled = localStorage.getItem("soundEnabled") === "true";
-  if (enabled) {
-    audioUnlockedRef.current = true;
-    setSoundEnabled(true);
-  }
-}, []);
+    const enabled = localStorage.getItem("soundEnabled") === "true";
+    if (enabled) {
+      audioUnlockedRef.current = true;
+      setSoundEnabled(true);
+    }
+  }, []);
 
   // ===============================
-  // SOCKET SETUP
+  // SOCKET SETUP (HYBRID REALTIME)
   // ===============================
   useEffect(() => {
     socket.connect();
@@ -40,11 +40,9 @@ const Kitchen = () => {
       console.log("🔌 Kitchen connected");
     });
 
-    // ✅ VERIFIED ORDER ONLY
     socket.on("new-order", (order) => {
       setOrders((prev) => [order, ...prev]);
 
-      // 🔊 SOUND + 📳 VIBRATION
       if (audioUnlockedRef.current) {
         playBeep();
         navigator.vibrate?.([200, 100, 200]);
@@ -61,18 +59,32 @@ const Kitchen = () => {
       setOrders((prev) => prev.filter((o) => o._id !== orderId));
     });
 
+    // 🔥 IMPORTANT: DO NOT disconnect socket on unmount
     return () => {
-      socket.disconnect();
+      socket.off("new-order");
+      socket.off("order-updated");
+      socket.off("order-deleted");
     };
   }, []);
 
   // ===============================
-  // FETCH EXISTING ORDERS
+  // INITIAL + FALLBACK FETCH (NO ORDER LOSS)
   // ===============================
   useEffect(() => {
-    api.get("/api/restaurant-order/all").then((res) => {
-      setOrders(res.data.data || []);
-    });
+    const fetchOrders = async () => {
+      try {
+        const res = await api.get("/api/restaurant-order/all");
+        setOrders(res.data.data || []);
+      } catch (err) {
+        console.error("Failed to fetch orders");
+      }
+    };
+
+    fetchOrders(); // initial load
+
+    const interval = setInterval(fetchOrders, 3000); // 🔥 fallback every 3s
+
+    return () => clearInterval(interval);
   }, []);
 
   const deleteOrder = async (id) => {
@@ -124,3 +136,4 @@ const Kitchen = () => {
 };
 
 export default Kitchen;
+
