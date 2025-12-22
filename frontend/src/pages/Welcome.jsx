@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FiInstagram, FiYoutube } from "react-icons/fi";
+import { FiInstagram, FiYoutube, FiFacebook  } from "react-icons/fi";
 
 import SimpleCarousel from "../components/Carousel";
 import heroBg from "../assets/tmc12.webp";
@@ -119,30 +119,46 @@ const Welcome = () => {
           />
         </section>
 
-        {/* ================= FOLLOW US ================= */}
-        <section className="py-16 px-4">
-          <div className="max-w-md mx-auto border rounded-2xl text-center p-8">
-            <h2 className="text-2xl font-bold mb-6">Follow Us</h2>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <a
-                href="https://www.instagram.com/yeterimeri_chai/"
-                target="_blank"
-                rel="noreferrer"
-                className="px-6 py-3 border rounded-xl flex gap-2 items-center justify-center hover:bg-black hover:text-white transition"
-              >
-                <FiInstagram /> Instagram
-              </a>
-              <a
-                href="https://www.youtube.com/@Ye_TMC"
-                target="_blank"
-                rel="noreferrer"
-                className="px-6 py-3 bg-black text-white rounded-xl flex gap-2 items-center justify-center hover:opacity-80 transition"
-              >
-                <FiYoutube /> YouTube
-              </a>
-            </div>
-          </div>
-        </section>
+        
+     {/* ================= FOLLOW US ================= */}
+<section className="py-16 px-4">
+  <div className="max-w-md mx-auto border rounded-2xl text-center p-8">
+    <h2 className="text-2xl font-bold mb-6">Follow Us</h2>
+
+    <div className="flex flex-col sm:flex-row justify-center gap-4">
+      {/* Instagram */}
+      <a
+        href="https://www.instagram.com/yeterimeri_chai/"
+        target="_blank"
+        rel="noreferrer"
+        className="px-6 py-3 border rounded-xl flex gap-2 items-center justify-center hover:bg-black hover:text-white transition"
+      >
+        <FiInstagram /> Instagram
+      </a>
+
+      {/* YouTube */}
+      <a
+        href="https://www.youtube.com/@Ye_TMC"
+        target="_blank"
+        rel="noreferrer"
+        className="px-6 py-3 bg-black text-white rounded-xl flex gap-2 items-center justify-center hover:opacity-80 transition"
+      >
+        <FiYoutube /> YouTube
+      </a>
+
+      {/* Facebook */}
+      <a
+        href="https://www.facebook.com/61551212191985/"
+        target="_blank"
+        rel="noreferrer"
+        className="px-6 py-3 border border-blue-600 text-blue-600 rounded-xl flex gap-2 items-center justify-center hover:bg-blue-600 hover:text-white transition"
+      >
+        <FiFacebook /> Facebook
+      </a>
+    </div>
+  </div>
+</section>
+
 
         {/* ================= ZOMATO CTA ================= */}
         <section className="bg-black py-24">
