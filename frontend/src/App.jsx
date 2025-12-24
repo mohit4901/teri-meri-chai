@@ -14,7 +14,7 @@ const App = () => {
 
   // 🔥 BACKEND WAKE-UP PING (ONCE)
   useEffect(() => {
-    fetch("https://ytmc-backend.onrender.com/ping")
+    fetch("https://ytmc-backend.onrender.com/api/health")
       .then(() => console.log("✅ Backend awake"))
       .catch(() => console.log("⚠️ Backend sleeping / cold start"));
   }, []);
