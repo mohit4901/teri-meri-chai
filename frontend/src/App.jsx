@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
@@ -11,6 +11,14 @@ import OrderForm from "./pages/OrderForm";
 import VerifyOrder from "./pages/VerifyOrder";
 
 const App = () => {
+
+  // 🔥 BACKEND WAKE-UP PING (ONCE)
+  useEffect(() => {
+    fetch("https://ytmc-backend.onrender.com/ping")
+      .then(() => console.log("✅ Backend awake"))
+      .catch(() => console.log("⚠️ Backend sleeping / cold start"));
+  }, []);
+
   return (
     <>
       <Navbar />
