@@ -1,3 +1,12 @@
+self.addEventListener("install", () => {
+  self.skipWaiting();
+});
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(self.clients.claim());
+});
+
+/* 🔔 RECEIVE MESSAGE FROM PAGE */
 self.addEventListener("message", (event) => {
   if (event.data?.type === "NEW_ORDER") {
     const { title, body, url } = event.data.payload;
@@ -12,7 +21,8 @@ self.addEventListener("message", (event) => {
   }
 });
 
-self.addEventListener("notificationclick", function (event) {
+/* 🔔 CLICK HANDLER */
+self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
   event.waitUntil(
