@@ -1,21 +1,15 @@
-self.addEventListener("push", function (event) {
-  const data = event.data ? event.data.json() : {};
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "NEW_ORDER") {
+    const { title, body, url } = event.data.payload;
 
-  const title = data.title || "🛎 New Order";
-  const options = {
-    body: data.body || "New order received",
-    icon: "/logo.png",
-    badge: "/badge.png",
-    sound: "/alarm.mp3", // some browsers ignore, OK
-    vibrate: [200, 100, 200],
-    data: {
-      url: data.url || "/kitchen"
-    }
-  };
-
-  event.waitUntil(
-    self.registration.showNotification(title, options)
-  );
+    self.registration.showNotification(title, {
+      body,
+      icon: "/logo.png",
+      badge: "/badge.png",
+      vibrate: [200, 100, 200],
+      data: { url }
+    });
+  }
 });
 
 self.addEventListener("notificationclick", function (event) {
@@ -23,7 +17,7 @@ self.addEventListener("notificationclick", function (event) {
 
   event.waitUntil(
     clients.matchAll({ type: "window", includeUncontrolled: true })
-      .then(clientList => {
+      .then((clientList) => {
         for (const client of clientList) {
           if (client.url.includes("/kitchen")) {
             return client.focus();
