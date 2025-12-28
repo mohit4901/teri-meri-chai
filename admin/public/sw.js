@@ -1,13 +1,17 @@
 console.log("🔥 SW LOADED");
 
-self.addEventListener("message", (event) => {
-  console.log("📩 SW RECEIVED MESSAGE", event.data);
+self.addEventListener("install", () => {
+  self.skipWaiting();
 });
 
-self.addEventListener("install", () => self.skipWaiting());
-self.addEventListener("activate", (e) => e.waitUntil(self.clients.claim()));
+self.addEventListener("activate", (event) => {
+  event.waitUntil(self.clients.claim());
+});
 
+/* 🔔 SINGLE MESSAGE HANDLER */
 self.addEventListener("message", (event) => {
+  console.log("📩 SW RECEIVED MESSAGE", event.data);
+
   if (event.data?.type === "NEW_ORDER") {
     const { title, body, url } = event.data.payload;
 
@@ -23,11 +27,17 @@ self.addEventListener("message", (event) => {
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
+
   event.waitUntil(
     clients.matchAll({ type: "window", includeUncontrolled: true })
-      .then(list =>
-        list.find(c => c.url.includes("/kitchen"))?.focus()
-        || clients.openWindow("/kitchen")
-      )
+      .then((list) => {
+        for (const client of list) {
+          if (client.url.includes("/kitchen")) {
+            return client.focus();
+          }
+        }
+        return clients.openWindow("/kitchen");
+      })
   );
 });
+
