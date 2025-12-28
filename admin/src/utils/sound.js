@@ -1,51 +1,37 @@
-let audioCtx = null;
-let buffer = null;
-let keepAliveInterval = null;
+let unlocked = false;
+let audioSrc = null;
 
 export async function unlockSound() {
   try {
-    if (!audioCtx) {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // preload MP3 once
+    if (!audioSrc) {
+      audioSrc = new Audio("/alarm.mp3");
+      audioSrc.preload = "auto";
+      audioSrc.volume = 1;
     }
 
-    const res = await fetch("/alarm.mp3");
-    const arr = await res.arrayBuffer();
-    buffer = await audioCtx.decodeAudioData(arr);
+    // 🔥 user-gesture bound play
+    await audioSrc.play();
+    audioSrc.pause();
+    audioSrc.currentTime = 0;
 
-    await audioCtx.resume();
-
-    // 🔊 REAL unlock sound
-    playBeep();
-
-    // 🔥 KEEP AUDIO CONTEXT ALIVE
-    if (!keepAliveInterval) {
-      keepAliveInterval = setInterval(() => {
-        if (audioCtx.state === "suspended") {
-          audioCtx.resume();
-        }
-      }, 1000);
-    }
-
-    console.log("🔊 Sound unlocked & kept alive");
+    unlocked = true;
+    console.log("🔊 Sound unlocked");
   } catch (e) {
-    console.error("Sound unlock failed", e);
+    console.error("Unlock failed", e);
   }
 }
 
 export function playBeep() {
   try {
-    if (!audioCtx || !buffer) return;
+    if (!unlocked) return;
 
-    if (audioCtx.state === "suspended") {
-      audioCtx.resume();
-    }
-
-    const source = audioCtx.createBufferSource();
-    source.buffer = buffer;
-    source.connect(audioCtx.destination);
-    source.start(0);
+    // 🔥 IMPORTANT: new Audio instance every time
+    const beep = new Audio("/alarm.mp3");
+    beep.volume = 1;
+    beep.play().catch(() => {});
   } catch (e) {
-    console.log("play error", e);
+    console.error("play error", e);
   }
 }
 
