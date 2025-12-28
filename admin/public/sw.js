@@ -1,12 +1,6 @@
-self.addEventListener("install", () => {
-  self.skipWaiting();
-});
+self.addEventListener("install", () => self.skipWaiting());
+self.addEventListener("activate", (e) => e.waitUntil(self.clients.claim()));
 
-self.addEventListener("activate", (event) => {
-  event.waitUntil(self.clients.claim());
-});
-
-/* 🔔 RECEIVE MESSAGE FROM PAGE */
 self.addEventListener("message", (event) => {
   if (event.data?.type === "NEW_ORDER") {
     const { title, body, url } = event.data.payload;
@@ -21,19 +15,13 @@ self.addEventListener("message", (event) => {
   }
 });
 
-/* 🔔 CLICK HANDLER */
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-
   event.waitUntil(
     clients.matchAll({ type: "window", includeUncontrolled: true })
-      .then((clientList) => {
-        for (const client of clientList) {
-          if (client.url.includes("/kitchen")) {
-            return client.focus();
-          }
-        }
-        return clients.openWindow("/kitchen");
-      })
+      .then(list =>
+        list.find(c => c.url.includes("/kitchen"))?.focus()
+        || clients.openWindow("/kitchen")
+      )
   );
 });
