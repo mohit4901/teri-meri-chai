@@ -5,26 +5,28 @@ import { unlockSound, playBeep } from "../utils/sound";
 
 const Kitchen = () => {
   const [orders, setOrders] = useState([]);
-  const [soundEnabled, setSoundEnabled] = useState(false); // session based
+  const [alertsEnabled, setAlertsEnabled] = useState(false);
   const audioUnlockedRef = useRef(false);
 
-  // 🔔 USER GESTURE REQUIRED EVERY SESSION
-  const enableSound = async () => {
+  // 🔔 LOGO / BELL CLICK → ENABLE SOUND + NOTIFICATION
+  const enableAlerts = async () => {
     try {
-      await unlockSound(); // MUST be awaited
+      // 🔊 Unlock sound (user gesture)
+      await unlockSound();
       audioUnlockedRef.current = true;
-      setSoundEnabled(true); // hide button after click
+      setAlertsEnabled(true);
+
+      // 🔔 Request notification permission
+      if ("Notification" in window) {
+        const res = await Notification.requestPermission();
+        if (res !== "granted") {
+          alert("Notifications blocked. Alerts may be limited.");
+        }
+      }
     } catch (e) {
-      console.error("Sound unlock failed");
+      console.error("Enable alerts failed", e);
     }
   };
-
-  // ❌ DO NOT AUTO-HIDE BUTTON ON REFRESH
-  // Browser requires fresh gesture
-  useEffect(() => {
-    audioUnlockedRef.current = false;
-    setSoundEnabled(false);
-  }, []);
 
   // ===============================
   // SOCKET SETUP
@@ -40,9 +42,23 @@ const Kitchen = () => {
     socket.on("new-order", (order) => {
       setOrders((prev) => [order, ...prev]);
 
+      // 🔊 Sound (only if unlocked)
       if (audioUnlockedRef.current) {
-        playBeep(); // 🔔 MP3 alarm
+        playBeep();
         navigator.vibrate?.([200, 100, 200]);
+      }
+
+      // 🔔 Notification (Service Worker)
+      if (Notification.permission === "granted" && navigator.serviceWorker) {
+        navigator.serviceWorker.ready.then((reg) => {
+          reg.showNotification("🛎 New Order Received", {
+            body: `Order #${order.dailyOrderNumber} • ₹${order.total}`,
+            icon: "/logo.png",
+            badge: "/badge.png",
+            vibrate: [200, 100, 200],
+            data: { url: "/kitchen" },
+          });
+        });
       }
     });
 
@@ -64,14 +80,14 @@ const Kitchen = () => {
   }, []);
 
   // ===============================
-  // FETCH ORDERS
+  // FETCH ORDERS (POLLING)
   // ===============================
   useEffect(() => {
     const fetchOrders = async () => {
       try {
         const res = await api.get("/api/restaurant-order/all");
         setOrders(Array.isArray(res.data) ? res.data : []);
-      } catch (err) {
+      } catch {
         console.error("Failed to fetch orders");
       }
     };
@@ -88,20 +104,31 @@ const Kitchen = () => {
 
   return (
     <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">🍳 Kitchen Panel</h1>
+      {/* ================= HEADER ================= */}
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-bold">🍳 Kitchen Panel</h1>
 
-      {/* 🔔 MUST CLICK EVERY REFRESH */}
-      {!soundEnabled && (
-        <div
-          onClick={enableSound}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 cursor-pointer"
+        {/* 🔔 ALERT BUTTON */}
+        <button
+          onClick={enableAlerts}
+          title={
+            !alertsEnabled
+              ? "Click to enable sound & notifications"
+              : ""
+          }
+          className={`px-4 py-2 rounded-lg font-bold transition-all
+            ${
+              alertsEnabled
+                ? "bg-green-600 text-white"
+                : "bg-red-600 text-white alert-blink"
+            }
+          `}
         >
-          <div className="bg-white px-6 py-4 rounded-lg font-bold text-lg">
-            🔔 Tap anywhere to enable order sound
-          </div>
-        </div>
-      )}
+          {alertsEnabled ? "🔔 Alerts ON" : "🔕 Enable Alerts"}
+        </button>
+      </div>
 
+      {/* ================= ORDERS ================= */}
       {orders.map((order, i) => {
         const isPaid = order.status === "paid";
 
@@ -132,7 +159,9 @@ const Kitchen = () => {
               ))}
             </ul>
 
-            <p className="font-semibold mt-3 text-lg">₹{order.total}</p>
+            <p className="font-semibold mt-3 text-lg">
+              ₹{order.total}
+            </p>
 
             <button
               onClick={() => deleteOrder(order._id)}
