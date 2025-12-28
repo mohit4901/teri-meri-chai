@@ -1,9 +1,8 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { socket } from "../utils/socket";
 import api from "../utils/api";
-import { unlockSound, playBeep } from "../utils/sound";
 
-/* 🔔 ALWAYS FIRE NOTIFICATION VIA SERVICE WORKER */
+/* 🔔 FIRE OS NOTIFICATION VIA SERVICE WORKER */
 function fireOrderNotification(order) {
   if (Notification.permission !== "granted") return;
   if (!navigator.serviceWorker?.controller) return;
@@ -21,25 +20,14 @@ function fireOrderNotification(order) {
 const Kitchen = () => {
   const [orders, setOrders] = useState([]);
   const [alertsEnabled, setAlertsEnabled] = useState(false);
-  const audioUnlockedRef = useRef(false);
 
-  /* 🔔 LOGO / BELL CLICK → ENABLE SOUND + NOTIFICATION */
+  /* 🔔 ENABLE ALERTS = ONLY PERMISSION */
   const enableAlerts = async () => {
-    try {
-      // 🔊 Unlock sound (must be user gesture)
-      await unlockSound();
-      audioUnlockedRef.current = true;
+    const res = await Notification.requestPermission();
+    if (res === "granted") {
       setAlertsEnabled(true);
-
-      // 🔔 Request notification permission
-      if ("Notification" in window) {
-        const res = await Notification.requestPermission();
-        if (res !== "granted") {
-          alert("Notifications blocked. Alerts may be limited.");
-        }
-      }
-    } catch (e) {
-      console.error("Enable alerts failed", e);
+    } else {
+      alert("Notifications blocked. Sound will not play.");
     }
   };
 
@@ -57,14 +45,8 @@ const Kitchen = () => {
     socket.on("new-order", (order) => {
       setOrders((prev) => [order, ...prev]);
 
-      // 🔔 NOTIFICATION (100% RELIABLE)
+      // 🔔 OS LEVEL SOUND (GUARANTEED)
       fireOrderNotification(order);
-
-      // 🔊 SOUND (only if unlocked)
-      if (audioUnlockedRef.current) {
-        playBeep();
-        navigator.vibrate?.([200, 100, 200]);
-      }
     });
 
     socket.on("order-updated", (order) => {
@@ -85,7 +67,7 @@ const Kitchen = () => {
   }, []);
 
   /* ===============================
-     FETCH ORDERS (POLLING)
+     FETCH ORDERS
   =============================== */
   useEffect(() => {
     const fetchOrders = async () => {
@@ -109,19 +91,13 @@ const Kitchen = () => {
 
   return (
     <div className="p-4">
-      {/* ================= HEADER ================= */}
+      {/* HEADER */}
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">🍳 Kitchen Panel</h1>
 
-        {/* 🔔 ALERT BUTTON */}
         <button
           onClick={enableAlerts}
-          title={
-            !alertsEnabled
-              ? "Click to enable sound & notifications"
-              : ""
-          }
-          className={`px-4 py-2 rounded-lg font-bold transition-all
+          className={`px-4 py-2 rounded-lg font-bold
             ${
               alertsEnabled
                 ? "bg-green-600 text-white"
@@ -133,50 +109,24 @@ const Kitchen = () => {
         </button>
       </div>
 
-      {/* ================= ORDERS ================= */}
-      {orders.map((order, i) => {
-        const isPaid = order.status === "paid";
+      {/* ORDERS */}
+      {orders.map((order, i) => (
+        <div key={order._id} className="p-4 bg-white border rounded mb-4">
+          <h2 className="font-bold text-lg">
+            Order #{order.dailyOrderNumber ?? i + 1}
+          </h2>
+          <p>Table: {order.tableNumber}</p>
+          <p>Customer: {order.customerName}</p>
+          <p className="font-semibold">₹{order.total}</p>
 
-        return (
-          <div key={order._id} className="p-4 bg-white border rounded mb-4">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="font-bold text-lg">
-                Order #{order.dailyOrderNumber ?? i + 1}
-              </h2>
-
-              <div
-                className={`px-5 py-2 rounded-lg text-white font-bold text-lg ${
-                  isPaid ? "bg-green-600" : "bg-red-600"
-                }`}
-              >
-                {isPaid ? "PAID" : "UNPAID"}
-              </div>
-            </div>
-
-            <p className="text-sm">Table: {order.tableNumber}</p>
-            <p className="text-sm">Customer: {order.customerName}</p>
-
-            <ul className="ml-5 list-disc mt-2">
-              {order.items.map((it, idx) => (
-                <li key={idx}>
-                  {it.name} × {it.qty}
-                </li>
-              ))}
-            </ul>
-
-            <p className="font-semibold mt-3 text-lg">
-              ₹{order.total}
-            </p>
-
-            <button
-              onClick={() => deleteOrder(order._id)}
-              className="mt-3 bg-red-600 text-white w-full py-2 rounded font-semibold"
-            >
-              Delete Order
-            </button>
-          </div>
-        );
-      })}
+          <button
+            onClick={() => deleteOrder(order._id)}
+            className="mt-2 bg-red-600 text-white w-full py-2 rounded"
+          >
+            Delete Order
+          </button>
+        </div>
+      ))}
     </div>
   );
 };
