@@ -3,15 +3,30 @@ import { socket } from "../utils/socket";
 import api from "../utils/api";
 import { unlockSound, playBeep } from "../utils/sound";
 
+/* 🔔 ALWAYS FIRE NOTIFICATION VIA SERVICE WORKER */
+function fireOrderNotification(order) {
+  if (Notification.permission !== "granted") return;
+  if (!navigator.serviceWorker?.controller) return;
+
+  navigator.serviceWorker.controller.postMessage({
+    type: "NEW_ORDER",
+    payload: {
+      title: "🛎 New Order Received",
+      body: `Order #${order.dailyOrderNumber} • ₹${order.total}`,
+      url: "/kitchen",
+    },
+  });
+}
+
 const Kitchen = () => {
   const [orders, setOrders] = useState([]);
   const [alertsEnabled, setAlertsEnabled] = useState(false);
   const audioUnlockedRef = useRef(false);
 
-  // 🔔 LOGO / BELL CLICK → ENABLE SOUND + NOTIFICATION
+  /* 🔔 LOGO / BELL CLICK → ENABLE SOUND + NOTIFICATION */
   const enableAlerts = async () => {
     try {
-      // 🔊 Unlock sound (user gesture)
+      // 🔊 Unlock sound (must be user gesture)
       await unlockSound();
       audioUnlockedRef.current = true;
       setAlertsEnabled(true);
@@ -28,9 +43,9 @@ const Kitchen = () => {
     }
   };
 
-  // ===============================
-  // SOCKET SETUP
-  // ===============================
+  /* ===============================
+     SOCKET SETUP
+  =============================== */
   useEffect(() => {
     socket.connect();
 
@@ -42,23 +57,13 @@ const Kitchen = () => {
     socket.on("new-order", (order) => {
       setOrders((prev) => [order, ...prev]);
 
-      // 🔊 Sound (only if unlocked)
+      // 🔔 NOTIFICATION (100% RELIABLE)
+      fireOrderNotification(order);
+
+      // 🔊 SOUND (only if unlocked)
       if (audioUnlockedRef.current) {
         playBeep();
         navigator.vibrate?.([200, 100, 200]);
-      }
-
-      // 🔔 Notification (Service Worker)
-      if (Notification.permission === "granted" && navigator.serviceWorker) {
-        navigator.serviceWorker.ready.then((reg) => {
-          reg.showNotification("🛎 New Order Received", {
-            body: `Order #${order.dailyOrderNumber} • ₹${order.total}`,
-            icon: "/logo.png",
-            badge: "/badge.png",
-            vibrate: [200, 100, 200],
-            data: { url: "/kitchen" },
-          });
-        });
       }
     });
 
@@ -79,9 +84,9 @@ const Kitchen = () => {
     };
   }, []);
 
-  // ===============================
-  // FETCH ORDERS (POLLING)
-  // ===============================
+  /* ===============================
+     FETCH ORDERS (POLLING)
+  =============================== */
   useEffect(() => {
     const fetchOrders = async () => {
       try {
