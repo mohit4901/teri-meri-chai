@@ -1,58 +1,43 @@
-let audio = null;
+let audioCtx = null;
+let buffer = null;
 
-// 🔓 user gesture se audio unlock
-export function unlockSound() {
+export async function unlockSound() {
   try {
-    if (!audio) {
-      audio = new Audio("/alarm.mp3");
-      audio.preload = "auto";
-      audio.loop = false;
-    }
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-    audio.muted = false;
-    audio.volume = 1;
+    const res = await fetch("/alarm.mp3");
+    const arrayBuffer = await res.arrayBuffer();
+    buffer = await audioCtx.decodeAudioData(arrayBuffer);
 
-    // 🔥 VERY IMPORTANT: silent play-pause unlock
-    audio.play().then(() => {
-      audio.pause();
-      audio.currentTime = 0;
-    });
+    await audioCtx.resume(); // 🔥 CRITICAL
+
+    // 🔊 REAL USER-GESTURE PLAY
+    const source = audioCtx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(audioCtx.destination);
+    source.start(0);
 
     localStorage.setItem("soundEnabled", "true");
+    console.log("🔊 Sound unlocked");
   } catch (e) {
-    console.warn("Audio unlock failed", e);
+    console.error("unlock failed", e);
   }
 }
 
-// 🔁 refresh ke baad auto-restore try
-export function tryAutoRestoreSound() {
-  try {
-    const enabled = localStorage.getItem("soundEnabled") === "true";
-    if (!enabled) return false;
-
-    if (!audio) {
-      audio = new Audio("/alarm.mp3");
-      audio.preload = "auto";
-    }
-
-    audio.muted = false;
-    audio.volume = 1;
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-// 🔔 ORDER SOUND (GUARANTEED)
 export function playBeep() {
   try {
-    const enabled = localStorage.getItem("soundEnabled") === "true";
-    if (!enabled || !audio) return;
+    if (localStorage.getItem("soundEnabled") !== "true") return;
+    if (!audioCtx || !buffer) return;
 
-    audio.currentTime = 0;
-    audio.play(); // 🔥 WORKS on socket / polling / background
+    if (audioCtx.state === "suspended") {
+      audioCtx.resume();
+    }
+
+    const source = audioCtx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(audioCtx.destination);
+    source.start(0);
   } catch (e) {
     console.log("play error", e);
   }
 }
-
