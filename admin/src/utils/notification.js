@@ -6,12 +6,17 @@ export async function requestNotificationPermission() {
   }
 }
 
-export function notifyNewOrder(order) {
+export async function sendSWNotification(order) {
   if (Notification.permission !== "granted") return;
+  if (!navigator.serviceWorker.ready) return;
 
-  new Notification("🛎 New Order Received", {
+  const reg = await navigator.serviceWorker.ready;
+
+  reg.showNotification("🛎 New Order Received", {
     body: `Order #${order.dailyOrderNumber} • ₹${order.total}`,
-    icon: "/logo.png",   // optional
-    silent: false        // 🔥 sound allow
+    icon: "/logo.png",
+    badge: "/badge.png",
+    vibrate: [200, 100, 200],
+    data: { url: "/kitchen" }
   });
 }
