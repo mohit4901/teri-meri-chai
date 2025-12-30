@@ -197,7 +197,7 @@ const OrderForm = () => {
         {/* Note */}
         <textarea
           name="note"
-          placeholder="Any extra instructions..."
+          placeholder="Review for Ye Teri Meri Chai"
           value={form.note}
           onChange={handleChange}
           rows={3}
